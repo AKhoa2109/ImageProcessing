@@ -9,8 +9,6 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 import style
 
-
-
 def handlerCamera(video):
     FRAME_WINDOW = st.image([])
     cap = None
@@ -97,7 +95,7 @@ def handlerCamera(video):
     cv.destroyAllWindows()
 def handlerVideo():
     c1,c2 = st.columns(2)
-    video_path = "NhanDangKhuonMat_onnx_Streamlit/video/video_predict.mp4"
+    video_path = "NhanDangKhuonMat_onnx_Streamlit/video_predict.mp4"
     with c1:
         video_file = open(video_path, 'rb')
         video_bytes = video_file.read()
