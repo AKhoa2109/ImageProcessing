@@ -74,7 +74,7 @@ if image_file is not None:
         elif chapter3_selected  == "Gradient":
             processed_image = c3.Gradient(imgin)
             
-                      
+    #Chương 4
     elif selected_chapter == "Chapter 4":
         
         chapter4_options = ["Spectrum", "DrawInferenceFilter", "RemoveMoire","RemoveInterference","RemoveMoireSimple","RemoveInferenceFilter","CreateMotion","CreateDemotion"]
