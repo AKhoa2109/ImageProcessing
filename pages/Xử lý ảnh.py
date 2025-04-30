@@ -11,32 +11,15 @@ import ThucHanhXuLyAnh.Chapter05 as c5
 import ThucHanhXuLyAnh.Chapter09 as c9
 import cv2
 from PIL import Image
-
+import os
+import sys
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
+import style
 
 st.set_page_config(page_title="Xử lý ảnh số")
 
-page_bg_img = """
-<style>
-[data-testid="stAppViewContainer"] {
-    background-image: url("");
-    background-size: 100% 100%;
-}
-[data-testid="stHeader"]{
-    background: rgba(0,0,0,0);
-}
-[data-testid="stToolbar"]{
-    right:2rem;
-}
-[data-testid="stSidebar"] > div:first-child {
-    background-image: url("https://visme.co/blog/wp-content/uploads/2017/07/50-Beautiful-and-Minimalist-Presentation-Backgrounds-040.jpg");
-    background-position: center;
-}
-</style>
-"""
-st.markdown(page_bg_img,unsafe_allow_html=True)
-st.markdown("# Xử lý ảnh")
-st.write()
-
+style.set_sidebar_background()
 image_file = st._main.file_uploader("Upload Your Image", type=[
                                   'jpg', 'png', 'jpeg', 'tif'])
 
