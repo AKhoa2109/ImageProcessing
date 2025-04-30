@@ -94,32 +94,30 @@ if image_file is not None:
                       
     elif selected_chapter == "Chapter 4":
         
-        chapter4_options = ["Spectrum", "FrequencyFilter", "DrawNotchRejectFilter", "RemoveMoire"]
+        chapter4_options = ["Spectrum", "DrawInferenceFilter", "RemoveMoire","RemoveInterference","RemoveMoireSimple","RemoveInferenceFilter","CreateMotion","CreateDemotion"]
         
         chapter4_selected = st.sidebar.selectbox("Select an option", chapter4_options)   
         
         
         if chapter4_selected == "Spectrum":
             processed_image = c4.Spectrum(imgin)
-        elif chapter4_selected == "FrequencyFilter":
-            processed_image = c4.FrequencyFilter(imgin)
-        elif chapter4_selected == "DrawNotchRejectFilter":
+        elif chapter4_selected == "DrawInferenceFilter":
             imgin = Image.new('RGB', (5, 5),  st.get_option("theme.backgroundColor"))
-            processed_image = c4.DrawNotchRejectFilter()
+            processed_image = c4.DrawInferenceFilter(imgin)
         elif chapter4_selected == "RemoveMoire":
             processed_image = c4.RemoveMoire(imgin)
-            
-
-    elif selected_chapter == "Chapter 5":
-        
-        chapter5_options = ["CreateMotionNoise", "DenoiseMotion", "DenoisestMotion"]
-        chapter5_selected = st.sidebar.selectbox("Select an option", chapter5_options)   
-        
-        if chapter5_selected == "CreateMotionNoise":
-            processed_image = c5.CreateMotionNoise(imgin)
-        elif chapter5_selected == "DenoiseMotion":
-            temp = cv2.medianBlur(imgin, 7)
-            processed_image = c5.DenoiseMotion(imgin) 
+        elif chapter4_selected == "RemoveInterference":
+            processed_image = c4.RemoveInterference(imgin)
+        elif chapter4_selected == "RemoveMoireSimple":
+            processed_image = c4.RemoveMoireSimple(imgin)
+        elif chapter4_selected == "RemoveInferenceFilter":
+            processed_image = c4.RemoveInferenceFilter(imgin)
+        elif chapter4_selected == "RemoveMoireSimple":
+            processed_image = c4.RemoveMoireSimple(imgin)
+        elif chapter4_selected == "CreateMotion":
+            processed_image = c4.CreateMotion(imgin)
+        elif chapter4_selected == "CreateDemotion":
+            processed_image = c4.CreateDemotion(imgin)
             
                  
     elif selected_chapter == "Chapter 9":
