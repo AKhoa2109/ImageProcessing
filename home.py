@@ -9,9 +9,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-
-
-
 def main():
     style.set_sidebar_background()
     st.write("# Đồ án cuối kỳ")

@@ -107,22 +107,23 @@ if image_file is not None:
                  
     elif selected_chapter == "Chapter 9":
         
-        chapter9_options = ["Erosion", "Dilation","OpeningClosing", "Boundary", "HoleFilling","HoleFillingMouse", "ConnectedComponent", "CountRice"]
+        # chapter9_options = ["Erosion", "Dilation","OpeningClosing", "Boundary", "HoleFilling","HoleFillingMouse", "ConnectedComponent", "CountRice"]
+        chapter9_options = ["ConnectedComponent", "CountRice"]
         chapter9_selected = st.sidebar.selectbox("Select an option", chapter9_options)   
         
-        if chapter9_selected  == "Erosion":
-            processed_image = c9.Erosion(imgin)    
-        elif chapter9_selected  == "Dilation":
-            processed_image = c9.Dilation(imgin)
-        elif chapter9_selected  == "OpeningClosing":
-            processed_image = c9.OpeningClosing(imgin)
-        elif chapter9_selected  == "Boundary":
-            processed_image = c9.Boundary(imgin)
-        elif chapter9_selected  == "HoleFilling":
-            processed_image = c9.HoleFilling(imgin)
-        elif chapter9_selected  == "HoleFillingMouse":
-            processed_image = c9.HoleFillingMouse(imgin)       
-        elif chapter9_selected  == "ConnectedComponent":
+        # if chapter9_selected  == "Erosion":
+        #     processed_image = c9.Erosion(imgin)    
+        # elif chapter9_selected  == "Dilation":
+        #     processed_image = c9.Dilation(imgin)
+        # elif chapter9_selected  == "OpeningClosing":
+        #     processed_image = c9.OpeningClosing(imgin)
+        # elif chapter9_selected  == "Boundary":
+        #     processed_image = c9.Boundary(imgin)
+        # elif chapter9_selected  == "HoleFilling":
+        #     processed_image = c9.HoleFilling(imgin)
+        # elif chapter9_selected  == "HoleFillingMouse":
+        #     processed_image = c9.HoleFillingMouse(imgin)       
+        if chapter9_selected  == "ConnectedComponent":
             processed_image = c9.ConnectedComponent(imgin)       
         elif chapter9_selected  == "CountRice":
             processed_image = c9.CountRice(imgin)          

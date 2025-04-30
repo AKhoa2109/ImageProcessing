@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 L = 256
-
+'''
 def Erosion(imgin, imgout):
     w = cv2.getStructuringElement(cv2.MORPH_RECT,(45,45))
     cv2.erode(imgin,w,imgout)
@@ -54,7 +54,7 @@ def MyConnectedComponent(imgin):
             print('%4d   %5d' % (dem, a[r]))
             dem = dem + 1
     return temp
-
+'''
 def ConnectedComponent(imgin):
     ret, temp = cv2.threshold(imgin, 200, L-1, cv2.THRESH_BINARY)
     temp = cv2.medianBlur(temp, 7)
