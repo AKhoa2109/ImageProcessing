@@ -1,5 +1,4 @@
 train: ../train/images
 val: ../valid/images
-
 nc: 5
 names: ["buoi", "sau_rieng", "tao", "thanh_long", "xoai"]
