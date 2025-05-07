@@ -77,57 +77,51 @@ if image_file is not None:
     #Chương 4
     elif selected_chapter == "Chapter 4":
         
-        chapter4_options = ["Spectrum", "DrawInferenceFilter", "RemoveMoire","RemoveInterference","RemoveMoireSimple","RemoveInferenceFilter","CreateMotion","CreateDemotion"]
+        chapter4_options = ["Spectrum", "DrawInferenceFilter", "RemoveMoire","RemoveInterference","RemoveMoireSimple","RemoveInferenceFilter","CreateMotion","CreateDemotion","CreateDemotionNoise"]
         
         chapter4_selected = st.sidebar.selectbox("Select an option", chapter4_options)   
         
         
         if chapter4_selected == "Spectrum":
             processed_image = c4.Spectrum(imgin)
-        elif chapter4_selected == "DrawInferenceFilter":
+        elif chapter4_selected == "DrawInferenceFilter": # Vẽ bộ lọc giao thoa 
             imgin = Image.new('RGB', (5, 5),  st.get_option("theme.backgroundColor"))
             processed_image = c4.DrawInferenceFilter(imgin)
-        elif chapter4_selected == "RemoveMoire":
-            processed_image = c4.RemoveMoire(imgin)
-        elif chapter4_selected == "RemoveInterference":
+        elif chapter4_selected == "RemoveMoire": # Xe
+            processed_image = c4.RemoveMoire(imgin) # Xe
+        elif chapter4_selected == "RemoveInterference": # Fig0465(a)(cassini).tif
             processed_image = c4.RemoveInterference(imgin)
-        elif chapter4_selected == "RemoveMoireSimple":
+        elif chapter4_selected == "RemoveMoireSimple":# Quyển sách
             processed_image = c4.RemoveMoireSimple(imgin)
-        elif chapter4_selected == "RemoveInferenceFilter":
+        elif chapter4_selected == "RemoveInferenceFilter": #
             processed_image = c4.RemoveInferenceFilter(imgin)
-        elif chapter4_selected == "RemoveMoireSimple":
-            processed_image = c4.RemoveMoireSimple(imgin)
         elif chapter4_selected == "CreateMotion":
             processed_image = c4.CreateMotion(imgin)
         elif chapter4_selected == "CreateDemotion":
             processed_image = c4.CreateDemotion(imgin)
-            
+        elif chapter4_selected == "CreateDemotionNoise":
+            processed_image = c4.CreateDemotionNoise(imgin)
                  
     elif selected_chapter == "Chapter 9":
         
         # chapter9_options = ["Erosion", "Dilation","OpeningClosing", "Boundary", "HoleFilling","HoleFillingMouse", "ConnectedComponent", "CountRice"]
-        chapter9_options = ["ConnectedComponent", "CountRice"]
+        chapter9_options = ["Erosion","Dilation","Boundary","Contour","ConnectedComponent", "CountRice"]
         chapter9_selected = st.sidebar.selectbox("Select an option", chapter9_options)   
-        
-        # if chapter9_selected  == "Erosion":
-        #     processed_image = c9.Erosion(imgin)    
-        # elif chapter9_selected  == "Dilation":
-        #     processed_image = c9.Dilation(imgin)
-        # elif chapter9_selected  == "OpeningClosing":
-        #     processed_image = c9.OpeningClosing(imgin)
-        # elif chapter9_selected  == "Boundary":
-        #     processed_image = c9.Boundary(imgin)
-        # elif chapter9_selected  == "HoleFilling":
-        #     processed_image = c9.HoleFilling(imgin)
-        # elif chapter9_selected  == "HoleFillingMouse":
-        #     processed_image = c9.HoleFillingMouse(imgin)       
+
+        if chapter9_selected  == "Erosion":
+            processed_image = c9.Erosion(imgin)    
+        elif chapter9_selected  == "Dilation":
+            processed_image = c9.Dilation(imgin)
+        elif chapter9_selected  == "Boundary":
+            processed_image = c9.Boundary(imgin)
+        elif chapter9_selected  == "Contour":
+            processed_image = c9.Contour(imgin)   
         if chapter9_selected  == "ConnectedComponent":
             processed_image = c9.ConnectedComponent(imgin)       
         elif chapter9_selected  == "CountRice":
             processed_image = c9.CountRice(imgin)          
             
     
-
     st.subheader("Original Image and Processed Image")
     st.image([imgin, processed_image], width = 350)
 st.button("Re-run")

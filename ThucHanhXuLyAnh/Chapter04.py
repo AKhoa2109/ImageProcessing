@@ -109,82 +109,167 @@ def CreateInferenceFilter(M,N):
                     H.real[u,v] = 0.0
     return H
 
-
+# Loại bỏ 
 def RemoveMoire(imgin):
     M,N = imgin.shape
     H = CreateMoireFilter(M,N)
     imgout = FrequencyFiltering(imgin, H)
     return imgout
-
+# Loại bỏ nhiễu giao thoa
 def RemoveInterference(imgin):
     M,N = imgin.shape
     H = CreateInferenceFilter(M,N)
     imgout = FrequencyFiltering(imgin, H)
     return imgout
 
+# def RemoveMoireSimple(imgin):
+#     M, N = imgin.shape
+#     # Bước 1
+#     P = cv2.getOptimalDFTSize(M)
+#     Q = cv2.getOptimalDFTSize(N)
+#     fp = np.zeros((P, Q), np.float32)
+#     # Bước 2
+#     fp[:M,:N] = 1.0*imgin
+
+#     # Bước 3
+#     for x in range(0,M):
+#         for y in range(0,N):
+#             if(x+y) % 2 == 1:
+#                 fp[x,y] = -fp[x,y]
+#     # Bước 4
+#     F = cv2.dft(fp, flags=cv2.DFT_COMPLEX_OUTPUT)
+#     # Bước 5: Tạo bộ lọc H
+#     H = CreateMoireFilter(P, Q)
+#     # Bước 6: G = F*H
+#     G = cv2.mulSpectrums(F, H, flags=cv2.DFT_ROWS)
+
+#     # Bước 7: IDFT
+#     g = cv2.idft(G,flags=cv2.DFT_SCALE)
+#     # Bước 8: 
+#     gR = g[:M,:N,0]
+#     for x in range(0,M):
+#         for y in range(0,N):
+#             if(x+y) % 2 == 1:
+#                 gR[x,y] = -gR[x,y]
+#     gR = np.clip(gR,0,L-1)
+#     imgout = gR.astype(np.uint8)
+#     return imgout
+
 def RemoveMoireSimple(imgin):
     M, N = imgin.shape
-    # Bước 1
+    # Bước 1: Tìm kích thước tối ưu cho DFT
     P = cv2.getOptimalDFTSize(M)
     Q = cv2.getOptimalDFTSize(N)
     fp = np.zeros((P, Q), np.float32)
-    # Bước 2
-    fp[:M,:N] = 1.0*imgin
-
-    # Bước 3
-    for x in range(0,M):
-        for y in range(0,N):
-            if(x+y) % 2 == 1:
-                fp[x,y] = -fp[x,y]
-    # Bước 4
+    
+    # Bước 2: Đưa ảnh vào phần đầu của fp
+    fp[:M, :N] = imgin.astype(np.float32)
+    
+    # Bước 3: Nhân (-1)^(x+y) để dịch chuyển tần số
+    for x in range(M):
+        for y in range(N):
+            if (x + y) % 2 == 1:
+                fp[x, y] = -fp[x, y]
+    
+    # Bước 4: Tính DFT (trả về mảng 2 kênh)
     F = cv2.dft(fp, flags=cv2.DFT_COMPLEX_OUTPUT)
-    # Bước 5: Tạo bộ lọc H
-    H = CreateMoireFilter(P, Q)
-    # Bước 6: G = F*H
+    
+    # Bước 5: Tạo bộ lọc H và chuyển sang định dạng 2 kênh
+    H_complex = CreateMoireFilter(P, Q)
+    H = np.zeros((P, Q, 2), np.float32)  # Tạo mảng 2 kênh
+    H[:, :, 0] = H_complex.real  # Kênh 0: phần thực
+    H[:, :, 1] = H_complex.imag  # Kênh 1: phần ảo
+    
+    # Bước 6: Nhân phổ F với bộ lọc H
     G = cv2.mulSpectrums(F, H, flags=cv2.DFT_ROWS)
-
-    # Bước 7: IDFT
-    g = cv2.idft(G,flags=cv2.DFT_SCALE)
-    # Bước 8: 
-    gR = g[:M,:N,0]
-    for x in range(0,M):
-        for y in range(0,N):
-            if(x+y) % 2 == 1:
-                gR[x,y] = -gR[x,y]
-    gR = np.clip(gR,0,L-1)
+    
+    # Bước 7: Tính IDFT
+    g = cv2.idft(G, flags=cv2.DFT_SCALE)
+    
+    # Bước 8: Đảo ngược phép nhân (-1)^(x+y)
+    gR = g[:M, :N, 0]  # Lấy phần thực
+    for x in range(M):
+        for y in range(N):
+            if (x + y) % 2 == 1:
+                gR[x, y] = -gR[x, y]
+    
+    # Bước 9: Chuẩn hóa và chuyển về ảnh uint8
+    gR = np.clip(gR, 0, L-1)
     imgout = gR.astype(np.uint8)
     return imgout
 
+# def RemoveInferenceFilter(imgin):
+#     M, N = imgin.shape
+#     # Bước 1
+#     P = cv2.getOptimalDFTSize(M)
+#     Q = cv2.getOptimalDFTSize(N)
+#     fp = np.zeros((P, Q), np.float32)
+#     # Bước 2
+#     fp[:M,:N] = 1.0*imgin
+
+#     # Bước 3
+#     for x in range(0,M):
+#         for y in range(0,N):
+#             if(x+y) % 2 == 1:
+#                 fp[x,y] = -fp[x,y]
+#     # Bước 4
+#     F = cv2.dft(fp, flags=cv2.DFT_COMPLEX_OUTPUT)
+#     # Bước 5: Tạo bộ lọc H
+#     H = CreateInferenceFilter(P, Q)
+#     # Bước 6: G = F*H
+#     G = cv2.mulSpectrums(F, H, flags=cv2.DFT_ROWS)
+
+#     # Bước 7: IDFT
+#     g = cv2.idft(G,flags=cv2.DFT_SCALE)
+#     # Bước 8: 
+#     gR = g[:M,:N,0]
+#     for x in range(0,M):
+#         for y in range(0,N):
+#             if(x+y) % 2 == 1:
+#                 gR[x,y] = -gR[x,y]
+#     gR = np.clip(gR,0,L-1)
+#     imgout = gR.astype(np.uint8)
+#     return imgout
 def RemoveInferenceFilter(imgin):
     M, N = imgin.shape
-    # Bước 1
+    # Bước 1: Tìm kích thước tối ưu cho DFT
     P = cv2.getOptimalDFTSize(M)
     Q = cv2.getOptimalDFTSize(N)
     fp = np.zeros((P, Q), np.float32)
-    # Bước 2
-    fp[:M,:N] = 1.0*imgin
-
-    # Bước 3
-    for x in range(0,M):
-        for y in range(0,N):
-            if(x+y) % 2 == 1:
-                fp[x,y] = -fp[x,y]
-    # Bước 4
+    
+    # Bước 2: Đưa ảnh vào phần đầu của fp và chuẩn hóa
+    fp[:M, :N] = imgin
+    
+    # Bước 3: Nhân (-1)^(x+y) để dịch chuyển tần số
+    for x in range(M):
+        for y in range(N):
+            if (x + y) % 2 == 1:
+                fp[x, y] = -fp[x, y]
+    
+    # Bước 4: Tính DFT
     F = cv2.dft(fp, flags=cv2.DFT_COMPLEX_OUTPUT)
-    # Bước 5: Tạo bộ lọc H
-    H = CreateInferenceFilter(P, Q)
-    # Bước 6: G = F*H
+    
+    # Bước 5: Tạo bộ lọc H và chuyển sang định dạng 2 kênh
+    H_complex = CreateInferenceFilter(P, Q)
+    H = np.zeros((P, Q, 2), np.float32)
+    H[:, :, 0] = H_complex.real  # Phần thực
+    H[:, :, 1] = H_complex.imag  # Phần ảo
+    
+    # Bước 6: Nhân phổ F với bộ lọc H
     G = cv2.mulSpectrums(F, H, flags=cv2.DFT_ROWS)
-
-    # Bước 7: IDFT
-    g = cv2.idft(G,flags=cv2.DFT_SCALE)
-    # Bước 8: 
-    gR = g[:M,:N,0]
-    for x in range(0,M):
-        for y in range(0,N):
-            if(x+y) % 2 == 1:
-                gR[x,y] = -gR[x,y]
-    gR = np.clip(gR,0,L-1)
+    
+    # Bước 7: Tính IDFT
+    g = cv2.idft(G, flags=cv2.DFT_SCALE)
+    
+    # Bước 8: Đảo ngược lại phép nhân (-1)^(x+y)
+    gR = g[:M, :N, 0]  # Lấy phần thực của kết quả
+    for x in range(M):
+        for y in range(N):
+            if (x + y) % 2 == 1:
+                gR[x, y] = -gR[x, y]
+    
+    # Bước 9: Chuẩn hóa và chuyển về ảnh uint8
+    gR = np.clip(gR, 0, L-1)
     imgout = gR.astype(np.uint8)
     return imgout
 
@@ -261,4 +346,8 @@ def CreateDemotion(imgin):
     M,N = imgin.shape
     H = CreateDemotionFilter(M,N)
     imgout = FrequencyFiltering(imgin, H)
+    return imgout
+def CreateDemotionNoise(imgin):
+    imgout = CreateDemotion(imgin)
+    imgout = cv2.medianBlur(imgin, 5)
     return imgout
