@@ -6,11 +6,9 @@ from tensorflow.keras.models import load_model
 from collections import deque
 from PIL import Image, ImageDraw, ImageFont
 
-# --- Cấu hình Streamlit ---
-st.title("Rock–Paper–Scissors Gesture Recognition")
+st.title("Nhận diện cử chỉ kéo búa bao")
 st.write("Nhấn **Open Camera** để bắt đầu, **Stop Camera** để dừng.")
 
-# Load model đã train (input_shape=(150,150,3), 3 lớp: rock/paper/scissors)
 @st.cache_resource
 def load_rps_model():
     return load_model('NhanDangCuChi/model.h5')
@@ -18,15 +16,12 @@ model = load_rps_model()
 
 CLASS_NAMES = ['Rock', 'Paper', 'Scissors']
 
-# Deque để smooth prediction: giữ 5 kết quả gần nhất
 if 'pred_queue' not in st.session_state:
     st.session_state.pred_queue = deque(maxlen=5)
 
-# Biến lưu trạng thái camera
 if 'run' not in st.session_state:
     st.session_state.run = False
 
-# Khi nhấn nút Open/Stop thì cập nhật state.run và dừng ngay kịch bản để Streamlit tự rerun
 col1, col2 = st.columns(2)
 with col1:
     if not st.session_state.run and st.button("Open Camera"):
@@ -37,7 +32,6 @@ with col2:
         st.session_state.run = False
         st.stop()
 
-# Placeholder để show frame
 placeholder = st.empty()
 
 # Hàm tiền xử lý ROI: resize về 150×150 và chuẩn hóa [0,1]
@@ -47,7 +41,6 @@ def preprocess_roi(roi, target_size=(224, 224)):
     roi = roi.astype('float32') / 255.0
     return np.expand_dims(roi, axis=0)
 
-# Hàm vẽ text Unicode lên frame với PIL
 def draw_unicode_text(frame, text, pos, font_path='ArialUnicode.ttf', font_size=32, color=(255,255,255)):
     img_pil = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(img_pil)
@@ -62,7 +55,6 @@ def draw_unicode_text(frame, text, pos, font_path='ArialUnicode.ttf', font_size=
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 
-# Nếu trạng thái run=True thì bật camera
 if st.session_state.run:
     cap = cv2.VideoCapture(0)
     with mp_hands.Hands(
@@ -108,7 +100,7 @@ if st.session_state.run:
                     label = CLASS_NAMES[most_common]
                     conf = preds[most_common]
 
-                    # Vẽ khung và text Unicode
+                    # Vẽ khung
                     cv2.rectangle(frame, (x1, y1-35), (x2, y1), (0,0,0), -1)
                     frame = draw_unicode_text(frame,
                                               f"{label} {conf*100:,.1f}%",

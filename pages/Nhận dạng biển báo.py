@@ -9,11 +9,11 @@ try:
         print('Đã load model rồi')
 except:
     st.session_state["LoadModel"] = True
-    st.session_state["Net"] = cv2.dnn.readNet("NhanDangBienBao/train_sign_yolo/best.onnx")
+    st.session_state["Net"] = cv2.dnn.readNet("NhanDangTinHieuGiaoThong/train_sign_yolo/best.onnx")
     print(st.session_state["LoadModel"])
     print('Load model lần đầu')
      
-filename_classes = 'NhanDangBienBao/train_sign_yolo/detection_classes_yolo.txt'
+filename_classes = 'NhanDangTinHieuGiaoThong/train_sign_yolo/detection_classes_yolo.txt'
 mywidth  = 640
 myheight = 640
 postprocessing = 'yolov8'
@@ -21,7 +21,6 @@ background_label_id = -1
 backend = 0
 target = 0
 
-# Load names of classes
 classes = None
 if filename_classes:
     with open(filename_classes, 'rt') as f:
@@ -41,12 +40,10 @@ def postprocess(frame, outs):
     frameWidth = frame.shape[1]
 
     def drawPred(classId, conf, left, top, right, bottom):
-        # Draw a bounding box.
         cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0))
 
         label = '%.2f' % conf
 
-        # Print a label of class.
         if classes:
             assert(classId < len(classes))
             label = '%s: %s' % (classes[classId], label)
@@ -64,9 +61,6 @@ def postprocess(frame, outs):
     confidences = []
     boxes = []
     if lastLayer.type == 'Region' or postprocessing == 'yolov8':
-        # Network produces output blob with a shape NxC where N is a number of
-        # detected objects and C is a number of classes + 4 where the first 4
-        # numbers are [center_x, center_y, width, height]
         if postprocessing == 'yolov8':
             box_scale_w = frameWidth / mywidth
             box_scale_h = frameHeight / myheight
@@ -98,8 +92,6 @@ def postprocess(frame, outs):
         print('Unknown output layer type: ' + lastLayer.type)
         exit()
 
-    # NMS is used inside Region layer only on DNN_BACKEND_OPENCV for another backends we need NMS in sample
-    # or NMS is required if number of outputs > 1
     if len(outNames) > 1 or (lastLayer.type == 'Region' or postprocessing == 'yolov8') and 0 != cv2.dnn.DNN_BACKEND_OPENCV:
         indices = []
         classIds = np.array(classIds)
@@ -138,12 +130,10 @@ if img_file_buffer is not None:
             frameHeight = frame.shape[0]
             frameWidth = frame.shape[1]
 
-            # Create a 4D blob from a frame.
             inpWidth = mywidth if mywidth else frameWidth
             inpHeight = myheight if myheight else frameHeight
             blob = cv2.dnn.blobFromImage(frame, size=(inpWidth, inpHeight), swapRB=True, ddepth=cv2.CV_8U)
 
-            # Run a model
             st.session_state["Net"].setInput(blob, scalefactor=scale, mean=mean)
             if st.session_state["Net"].getLayer(0).outputNameToIndex('im_info') != -1:  # Faster-RCNN or R-FCN
                 frame = cv2.resize(frame, (inpWidth, inpHeight))

@@ -32,7 +32,7 @@ def handlerCamera(video):
     print('Trang thai nhan Stop', st.session_state.stop)
 
     if 'frame_stop' not in st.session_state:
-        frame_stop = cv.imread('./pages/Source/KhuonMat/stop.jpg')
+        frame_stop = cv.imread('stop.jpg')
         st.session_state.frame_stop = frame_stop
         print('Đã load stop.jpg')
 
@@ -95,7 +95,7 @@ def handlerCamera(video):
     cv.destroyAllWindows()
 def handlerVideo():
     c1,c2 = st.columns(2)
-    video_path = "NhanDangKhuonMat_onnx_Streamlit/video_predict.mp4"
+    video_path = "NhanDangKhuonMat_onnx_Streamlit/trainvideo.mp4"
     with c1:
         video_file = open(video_path, 'rb')
         video_bytes = video_file.read()

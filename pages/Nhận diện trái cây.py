@@ -6,7 +6,7 @@ st.title('Nhận dạng trái cây')
 
 try:
     if st.session_state["LoadModel"] == True:
-        print('Đã load model rồi')
+        print('Model đã sẵn sàng')
 except:
     st.session_state["LoadModel"] = True
     st.session_state["Net"] = cv2.dnn.readNet("NhanDangTraiCay/Yolov8n/yolov8n_traicay.onnx")

@@ -17,10 +17,11 @@ if not os.path.exists(MODEL_PATH):
     st.stop()
 
 try:
-    # Load the emotion detection model
+   
+   #load_model: tải mô hình Keras đã huấn luyện, dùng để dự đoán cảm xúc.
     model = load_model(MODEL_PATH, compile=False)
     
-    # Load the face cascade classifier directly from OpenCV
+    # CascadeClassifier: thuật toán Haar Cascade có sẵn trong OpenCV để phát hiện mặt.
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     if face_cascade.empty():
         st.error("Không thể load cascade classifier từ OpenCV")
@@ -33,11 +34,11 @@ except Exception as e:
 emotions = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 
 def preprocess_face(face_img):
-    # Convert to grayscale
+    # Chuyển sang ảnh xám
     gray = cv2.cvtColor(face_img, cv2.COLOR_BGR2GRAY)
-    # Resize to 48x48
+    # Reszie kích thước 48x48
     resized = cv2.resize(gray, (48, 48))
-    # Convert to array and normalize
+    # Chuyển thành mảng NumPy 
     img_array = img_to_array(resized)
     img_array = np.expand_dims(img_array, axis=0)
     img_array = img_array / 255.0
@@ -46,27 +47,22 @@ def preprocess_face(face_img):
 def main():
     st.title("Nhận diện cảm xúc khuôn mặt real-time")
     
-    # Add a start/stop button
     start_button = st.button("Bắt đầu/ Dừng")
     
-    # Initialize session state for camera
     if 'camera_on' not in st.session_state:
         st.session_state.camera_on = False
     if 'cap' not in st.session_state:
         st.session_state.cap = None
     
-    # Toggle camera state when button is clicked
     if start_button:
         if st.session_state.camera_on:
-            # Dừng camera
             if st.session_state.cap is not None:
                 st.session_state.cap.release()
                 st.session_state.cap = None
             st.session_state.camera_on = False
         else:
-            # Bắt đầu camera
             try:
-                st.session_state.cap = cv2.VideoCapture('NhanDienCamXuc/test.mp4')
+                st.session_state.cap = cv2.VideoCapture('NhanDienCamXuc/video.mp4')
                 if not st.session_state.cap.isOpened():
                     st.error("Không thể kết nối với camera")
                     st.session_state.camera_on = False
@@ -77,51 +73,44 @@ def main():
                 st.session_state.camera_on = False
                 return
     
-    # Create a placeholder for the video feed
     video_placeholder = st.empty()
     
     if st.session_state.camera_on and st.session_state.cap is not None:
         try:
+            # Đọc tuần tự từng frame từ video.
             while st.session_state.camera_on:
                 ret, frame = st.session_state.cap.read()
                 if not ret:
                     st.error("Không thể đọc frame từ camera")
                     break
                     
-                # Convert frame to grayscale for face detection
+                # Chuyển sang xám và phát hiện mặt.
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                
-                # Detect faces
                 faces = face_cascade.detectMultiScale(gray, 1.3, 5)
                 
-                # Process each detected face
+        
                 for (x, y, w, h) in faces:
-                    # Extract face ROI
+                   
                     face_roi = frame[y:y+h, x:x+w]
                     
-                    # Preprocess face for emotion detection
+                   
                     processed_face = preprocess_face(face_roi)
                     
-                    # Predict emotion
+              
                     predictions = model.predict(processed_face)
                     emotion_idx = np.argmax(predictions[0])
                     emotion = emotions[emotion_idx]
                     confidence = predictions[0][emotion_idx]
                     
-                    # Draw rectangle around face
+                    # Vẽ hình chữ nhật quanh mặt và ghi nhãn cảm xúc.
                     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                    
-                    # Display emotion and confidence
                     text = f"{emotion}: {confidence:.2f}"
                     cv2.putText(frame, text, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
                 
-                # Convert frame to RGB for Streamlit
+           
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                
-                # Display the frame
                 video_placeholder.image(frame_rgb, channels="RGB")
                 
-                # Check if stop button is pressed
                 if not st.session_state.camera_on:
                     break
         except Exception as e:
