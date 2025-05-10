@@ -4,6 +4,35 @@ import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
 import os
+import sys
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
+import style
+style.set_sidebar_background()
+st.markdown("""
+    <style>
+        .stApp {
+            background-image: url("https://slidebazaar.com/wp-content/uploads/2024/08/Free-Professional-Background-PPT-Templates.jpg");
+            /* cover → làm đầy, nhưng có thể crop; contain → vừa đủ, giữ nguyên tỉ lệ */
+            background-size: contain;     
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;           /* đảm bảo luôn cao tối thiểu 100% chiều cao cửa sổ */
+            width: 100%;                 /* đảm bảo luôn rộng 100% */
+        }
+        .stApp > header,
+        .stApp > footer {
+            background-color: transparent;
+        }
+        .stApp > .main > .block-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 10px;
+            margin: 1rem;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 # Xác định đường dẫn tuyệt đối tới thư mục hiện tại (nơi chứa file script này)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
