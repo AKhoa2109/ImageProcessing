@@ -17,8 +17,6 @@ RIGHT_EYE_LANDMARKS = [362, 385, 387, 263, 373, 380]
 
 # Hằng số
 EAR_THRESHOLD = 0.21  # Ngưỡng tỷ lệ mắt
-CONSECUTIVE_FRAMES = 2  # Số frame liên tiếp để xác định chớp mắt
-
 
 def calculate_ear(eye_idxs: List[int], landmarks: List[Tuple[float, float]]) -> float:
     """Tính toán tỷ lệ khung mắt (Eye Aspect Ratio)"""
@@ -27,7 +25,6 @@ def calculate_ear(eye_idxs: List[int], landmarks: List[Tuple[float, float]]) -> 
     vertical2 = np.linalg.norm(p2 - p4)
     horizontal = np.linalg.norm(p0 - p3)
     return (vertical1 + vertical2) / (2.0 * horizontal)
-
 
 def process_frame(image):
     """Xử lý frame ảnh để phát hiện chớp mắt và vẽ landmarks"""
@@ -47,38 +44,37 @@ def process_frame(image):
             right_ear = calculate_ear(RIGHT_EYE_LANDMARKS, landmarks)
             avg_ear = (left_ear + right_ear) / 2.0
 
-            if avg_ear < EAR_THRESHOLD:
-                st.session_state.consecutive_frames += 1
-                if st.session_state.consecutive_frames >= CONSECUTIVE_FRAMES:
-                    st.session_state.blink_counter += 1
-                    st.session_state.is_blinking = True
-                    st.session_state.consecutive_frames = 0
-            else:
-                st.session_state.consecutive_frames = 0
-                st.session_state.is_blinking = False
+            eye_closed = avg_ear < EAR_THRESHOLD
+
+            # Phát hiện chuyển đổi trạng thái mắt
+            if eye_closed and not st.session_state.previous_closed:
+                st.session_state.eye_closed = True
+            elif not eye_closed and st.session_state.previous_closed:
+                st.session_state.blink_counter += 1
+                st.session_state.eye_closed = False
+
+            st.session_state.previous_closed = eye_closed
 
             # Vẽ kết nối mắt
-            for start, end in LEFT_EYE_CONNECTIONS:
-                x1, y1 = int(lm.landmark[start].x * w), int(lm.landmark[start].y * h)
-                x2, y2 = int(lm.landmark[end].x * w), int(lm.landmark[end].y * h)
-                cv2.line(image, (x1, y1), (x2, y2), (0, 255, 0), 1)
-            for start, end in RIGHT_EYE_CONNECTIONS:
-                x1, y1 = int(lm.landmark[start].x * w), int(lm.landmark[start].y * h)
-                x2, y2 = int(lm.landmark[end].x * w), int(lm.landmark[end].y * h)
-                cv2.line(image, (x1, y1), (x2, y2), (0, 255, 0), 1)
+            for connection in [LEFT_EYE_CONNECTIONS, RIGHT_EYE_CONNECTIONS]:
+                for start, end in connection:
+                    x1 = int(lm.landmark[start].x * w)
+                    y1 = int(lm.landmark[start].y * h)
+                    x2 = int(lm.landmark[end].x * w)
+                    y2 = int(lm.landmark[end].y * h)
+                    cv2.line(image, (x1, y1), (x2, y2), (0, 255, 0), 1)
         return image
-
 
 def main():
     st.title("Phát hiện chớp mắt thời gian thực 👁️")
 
-    # Khởi tạo state
+    # Khởi tạo session state
     if 'blink_counter' not in st.session_state:
         st.session_state.blink_counter = 0
-    if 'is_blinking' not in st.session_state:
-        st.session_state.is_blinking = False
-    if 'consecutive_frames' not in st.session_state:
-        st.session_state.consecutive_frames = 0
+    if 'previous_closed' not in st.session_state:
+        st.session_state.previous_closed = False
+    if 'eye_closed' not in st.session_state:
+        st.session_state.eye_closed = False
 
     start = st.button("Bắt đầu phát hiện")
     stop = st.button("Dừng")
@@ -98,14 +94,13 @@ def main():
             frame = cv2.flip(frame, 1)
             processed = process_frame(frame)
 
-            # Cập nhật từng phần, không chồng lệnh
+            # Hiển thị hình ảnh và thông tin
             img_placeholder.image(processed, channels="BGR", use_container_width=True)
             count_placeholder.markdown(f"**Số lần chớp mắt:** {st.session_state.blink_counter}")
-            status = "Đang chớp mắt" if st.session_state.is_blinking else "Mắt mở"
+            status = "Đóng mắt" if st.session_state.eye_closed else "Mở mắt"
             status_placeholder.markdown(f"**Trạng thái:** {status}")
 
         cap.release()
 
 if __name__ == "__main__":
     main()
-
