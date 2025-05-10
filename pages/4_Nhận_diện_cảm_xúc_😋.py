@@ -74,7 +74,7 @@ def preprocess_face(face_img):
     return img_array
 
 def main():
-    st.title("Nhận diện cảm xúc khuôn mặt real-time")
+    st.title("Nhận diện cảm xúc khuôn mặt")
     
     start_button = st.button("Bắt đầu/ Dừng")
     
