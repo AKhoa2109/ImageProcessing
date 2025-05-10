@@ -86,8 +86,8 @@ if image_file is not None:
             processed_image = c4.Spectrum(imgin)
         elif chapter4_selected == "DrawInferenceFilter": # Vẽ bộ lọc giao thoa 
             imgin = Image.new('RGB', (5, 5),  st.get_option("theme.backgroundColor"))
-            processed_image = c4.DrawInferenceFilter(imgin)
-        elif chapter4_selected == "RemoveMoire": # Xe
+            processed_image = c4.DrawInferenceFilter(imgin)# Xe
+        elif chapter4_selected == "RemoveMoire": 
             processed_image = c4.RemoveMoire(imgin) # Xe
         elif chapter4_selected == "RemoveInterference": # Fig0465(a)(cassini).tif
             processed_image = c4.RemoveInterference(imgin)
