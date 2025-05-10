@@ -36,12 +36,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 try:
-    if st.session_state["LoadModel"] == True:
+    if st.session_state["LoadModelBB"] == True:
         print('Đã load model rồi')
 except:
-    st.session_state["LoadModel"] = True
-    st.session_state["Net"] = cv2.dnn.readNet("NhanDangTinHieuGiaoThong/train_sign_yolo/best.onnx")
-    print(st.session_state["LoadModel"])
+    st.session_state["LoadModelBB"] = True
+    st.session_state["NetBB"] = cv2.dnn.readNet("NhanDangTinHieuGiaoThong/train_sign_yolo/best.onnx")
+    print(st.session_state["LoadModelBB"])
     print('Load model lần đầu')
      
 filename_classes = 'NhanDangTinHieuGiaoThong/train_sign_yolo/detection_classes_yolo.txt'
@@ -57,9 +57,9 @@ if filename_classes:
     with open(filename_classes, 'rt') as f:
         classes = f.read().rstrip('\n').split('\n')
 
-st.session_state["Net"].setPreferableBackend(0)
-st.session_state["Net"].setPreferableTarget(0)
-outNames = st.session_state["Net"].getUnconnectedOutLayersNames()
+st.session_state["NetBB"].setPreferableBackend(0)
+st.session_state["NetBB"].setPreferableTarget(0)
+outNames = st.session_state["NetBB"].getUnconnectedOutLayersNames()
 
 confThreshold = 0.5
 nmsThreshold = 0.4
@@ -84,9 +84,9 @@ def postprocess(frame, outs):
         cv2.rectangle(frame, (left, top - labelSize[1]), (left + labelSize[0], top + baseLine), (255, 255, 255), cv2.FILLED)
         cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
-    layerNames = st.session_state["Net"].getLayerNames()
-    lastLayerId = st.session_state["Net"].getLayerId(layerNames[-1])
-    lastLayer = st.session_state["Net"].getLayer(lastLayerId)
+    layerNames = st.session_state["NetBB"].getLayerNames()
+    lastLayerId = st.session_state["NetBB"].getLayerId(layerNames[-1])
+    lastLayer = st.session_state["NetBB"].getLayer(lastLayerId)
 
     classIds = []
     confidences = []
@@ -165,12 +165,12 @@ if img_file_buffer is not None:
             inpHeight = myheight if myheight else frameHeight
             blob = cv2.dnn.blobFromImage(frame, size=(inpWidth, inpHeight), swapRB=True, ddepth=cv2.CV_8U)
 
-            st.session_state["Net"].setInput(blob, scalefactor=scale, mean=mean)
-            if st.session_state["Net"].getLayer(0).outputNameToIndex('im_info') != -1:  # Faster-RCNN or R-FCN
+            st.session_state["NetBB"].setInput(blob, scalefactor=scale, mean=mean)
+            if st.session_state["NetBB"].getLayer(0).outputNameToIndex('im_info') != -1:  # Faster-RCNN or R-FCN
                 frame = cv2.resize(frame, (inpWidth, inpHeight))
-                st.session_state["Net"].setInput(np.array([[inpHeight, inpWidth, 1.6]], dtype=np.float32), 'im_info')
+                st.session_state["NetBB"].setInput(np.array([[inpHeight, inpWidth, 1.6]], dtype=np.float32), 'im_info')
 
-            outs = st.session_state["Net"].forward(outNames)
+            outs = st.session_state["NetBB"].forward(outNames)
             postprocess(frame, outs)
 
             color_coverted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) 

@@ -52,7 +52,7 @@ if image_file is not None:
     file_bytes = np.asarray(bytearray(image_file.read()), dtype=np.uint8)
     imgin = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE) 
 
-    chapter_options = ["Chapter 3", "Chapter 4", "Chapter 5", "Chapter 9"]
+    chapter_options = ["Chapter 3", "Chapter 4", "Chapter 9"]
     selected_chapter = st.sidebar.selectbox("Select an option", chapter_options)
 
 
@@ -75,11 +75,8 @@ if image_file is not None:
         elif chapter3_selected  == "HistEqual":
             processed_image = c3.HistEqual(imgin)
         elif chapter3_selected  == "HistEqualColor":
-            if len(imgin.shape) == 2 or imgin.shape[2] == 1:  # ảnh trắng-đen
-                img_bgr = cv2.cvtColor(imgin, cv2.COLOR_GRAY2BGR)
-            else:
-                img_bgr = imgin
-            processed_image = c3.HistEqualColor(img_bgr)
+            imgin = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR) 
+            processed_image = c3.HistEqualColor(imgin)
         elif chapter3_selected == "LocalHist":
             # imgin = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
             processed_image = c3.LocalHist(imgin)
@@ -145,7 +142,8 @@ if image_file is not None:
         elif chapter9_selected  == "CountRice":
             processed_image = c9.CountRice(imgin)          
             
-    
+    image_bgr = cv2.imdecode(file_bytes, cv2.IMREAD_UNCHANGED)
+    image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
     st.subheader("Original Image and Processed Image")
-    st.image([imgin, processed_image], width = 350)
+    st.image([image_rgb, processed_image], width = 350)
 st.button("Re-run")
