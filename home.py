@@ -4,19 +4,26 @@ from PIL import Image
 import requests
 from io import BytesIO
 
-# Thêm CSS để đặt hình nền
+st.set_page_config(
+    page_title="Đồ án cuối kỳ",
+    page_icon=":guardsman:",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 st.markdown("""
     <style>
         .stApp {
-            background-image: url("https://img.freepik.com/free-vector/futuristic-white-technology-background_23-2148390336.jpg?semt=ais_hybrid&w=740");
-            background-size: cover;
+            background-image: url("https://thetamtru.com.vn/wp-content/uploads/Hinh-anh-background-dep-hoa-tiet-chuyen-nghiep-1536x864.jpg");
+            /* cover → làm đầy, nhưng có thể crop; contain → vừa đủ, giữ nguyên tỉ lệ */
+            background-size: contain;     
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
+            min-height: 100vh;           /* đảm bảo luôn cao tối thiểu 100% chiều cao cửa sổ */
+            width: 100%;                 /* đảm bảo luôn rộng 100% */
         }
-        .stApp > header {
-            background-color: transparent;
-        }
+        .stApp > header,
         .stApp > footer {
             background-color: transparent;
         }
@@ -29,15 +36,21 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.set_page_config(
-    page_title="Đồ án cuối kỳ",
-    page_icon=":guardsman:",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+def show_features():
+    st.markdown(
+        """
+        → 👁️ Nhận diện chớp mắt  
+        → 😊 Nhận diện cảm xúc  
+        → ✊✌️🖐️ Nhận diện cử chỉ (búa – kéo – bao)  
+        → 👤 Nhận diện khuôn mặt  
+        → 🍎 Nhận diện trái cây  
+        → 🚥 Nhận dạng biển báo giao thông  
+        → 🚗 Nhận dạng phương tiện  
+        → 🖼️ Xử lý ảnh  
+        """,
+        unsafe_allow_html=True
+    )
 
-# style.py
-import streamlit as st
 
 def main():
     style.set_sidebar_background()
@@ -72,16 +85,16 @@ def main():
         st.write("**MSSV:** 22110369")
 
     st.markdown("### Chức năng trong bài")
-    st.write(
-        """
-        - 📖 Nhận diện chớp mắt
-        - 📖 Nhận diện cảm xúc 
-        - 📖 Nhận diện khuôn mặt  
-        - 📖 Nhận diện trái cây
-        - 📖 Nhận dạng xe
-        - 📖 Xử lý ảnh
-        """
-    )
+    show_features()
+
+    k1,k2,k3 = st.columns(3)
+    k1.image(Image.open('images/opencv.jpg'))
+    k2.image(Image.open('images/streamlit.png'))
+    k3.image(Image.open('images/anh1.png'))
+    t1,t2,t3 = st.columns(3)
+    t1.image(Image.open('images/anh2.jpg'))
+    t2.image(Image.open('images/anh3.jpg').resize((256, 256)))
+    t3.image(Image.open('images/anh4.png').resize((256, 256)))
 
 if __name__ == "__main__":
     main()

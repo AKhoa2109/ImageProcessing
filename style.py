@@ -16,7 +16,7 @@ def set_sidebar_background():
     <style>
     /* background sidebar */
     [data-testid="stSidebar"] > div:first-child {{
-        background-image: url("https://noithatbinhminh.com.vn/wp-content/uploads/2022/12/background-xanh-duong-02.jpg");
+        background-image: url("https://slidebazaar.com/wp-content/uploads/2024/08/Free-Professional-Background-PPT-Template.jpg");
         background-position: center;
         background-size: cover;
     }}
@@ -49,13 +49,6 @@ def set_sidebar_background():
     #  background-image: url("data:image/png;base64,{logo_b64}");
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Ví dụ sử dụng trong app
-st.set_page_config(
-    page_title="Đồ án cuối kỳ",
-    page_icon=":guardsman:",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
 
 def main():
     set_sidebar_background()

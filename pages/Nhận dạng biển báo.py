@@ -2,7 +2,38 @@ import streamlit as st
 import numpy as np
 from PIL import Image
 import cv2
+import os
+import sys
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
+import style
+style.set_sidebar_background()
+
 st.title('Nhận dạng biển báo')
+st.markdown("""
+    <style>
+        .stApp {
+            background-image: url("https://slidebazaar.com/wp-content/uploads/2024/08/Free-Professional-Background-PPT-Templates.jpg");
+            /* cover → làm đầy, nhưng có thể crop; contain → vừa đủ, giữ nguyên tỉ lệ */
+            background-size: contain;     
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;           /* đảm bảo luôn cao tối thiểu 100% chiều cao cửa sổ */
+            width: 100%;                 /* đảm bảo luôn rộng 100% */
+        }
+        .stApp > header,
+        .stApp > footer {
+            background-color: transparent;
+        }
+        .stApp > .main > .block-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 10px;
+            margin: 1rem;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 try:
     if st.session_state["LoadModel"] == True:
