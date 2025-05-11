@@ -23,7 +23,7 @@ st.markdown("""
     <style>
         .stApp {
             background-image: url("https://slidebazaar.com/wp-content/uploads/2024/08/Free-Professional-Background-PPT-Templates.jpg");
-            /* cover → làm đầy, nhưng có thể crop; contain → vừa đủ, giữ nguyên tỉ lệ */
+            /* cover → làm đầy, nhưng có thể crop; contain → vừa đủ, giữ nguyên tỉ lệ */
             background-size: contain;     
             background-position: center;
             background-repeat: no-repeat;
@@ -55,17 +55,26 @@ if 'last_selected_option' not in st.session_state:
     st.session_state.last_selected_option = None
 
 def find_image_file(base_path, option_name):
-    """Tìm file ảnh với các định dạng khác nhau"""
+    """
+    Tìm file ảnh với các định dạng khác nhau
+    
+    Tham số:
+        base_path: Đường dẫn thư mục chứa ảnh
+        option_name: Tên file ảnh cần tìm
+        
+    Trả về:
+        str: Đường dẫn đến file ảnh tìm được, None nếu không tìm thấy
+    """
     # Danh sách các định dạng ảnh phổ biến
     extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.tif', '.tiff']
     
-    # Tìm tất cả các file ảnh có thể
+    # Tìm file với tên chính xác
     for ext in extensions:
         image_path = os.path.join(base_path, f"{option_name}{ext}")
         if os.path.exists(image_path):
             return image_path
     
-    # Nếu không tìm thấy file với tên chính xác, tìm file có chứa tên option
+    # Tìm file có chứa tên option
     for ext in extensions:
         pattern = os.path.join(base_path, f"*{option_name}*{ext}")
         files = glob.glob(pattern)
@@ -76,14 +85,14 @@ def find_image_file(base_path, option_name):
 
 # Define chapter options and selections in sidebar
 chapter_options = ["Chapter 3", "Chapter 4", "Chapter 9"]
-selected_chapter = st.sidebar.selectbox("Select Chapter", chapter_options)
+selected_chapter = st.sidebar.selectbox("Chọn Chương", chapter_options)
 
 # Define chapter-specific options
 if selected_chapter == "Chapter 3":
     chapter3_options = ["Negative", "Logarit", "Power", "PiecewiseLinear", "Histogram", "HistEqual",
                         "HistEqualColor", "LocalHist", "HistStat", 
                         "BoxFilter", "LowpassGauss","Threshold", "MedianFilter", "Sharpen", "Gradient"]
-    chapter3_selected = st.sidebar.selectbox("Select Operation", chapter3_options)
+    chapter3_selected = st.sidebar.selectbox("Chọn Thao Tác", chapter3_options)
     
     # Load example image if chapter or option changed
     if (st.session_state.last_selected_chapter != selected_chapter or 
@@ -95,9 +104,9 @@ if selected_chapter == "Chapter 3":
         st.session_state.last_selected_option = chapter3_selected
 
 elif selected_chapter == "Chapter 4":
-    chapter4_options = ["Spectrum", "RemoveMoire","RemoveInterference","RemoveMoireSimple",
+    chapter4_options = ["Spectrum", "DrawInferenceFilter", "RemoveMoire","RemoveInterference","RemoveMoireSimple",
                         "CreateMotion","CreateDemotion","CreateDemotionNoise"]
-    chapter4_selected = st.sidebar.selectbox("Select Operation", chapter4_options)
+    chapter4_selected = st.sidebar.selectbox("Chọn Thao Tác", chapter4_options)
     
     # Load example image if chapter or option changed
     if (st.session_state.last_selected_chapter != selected_chapter or 
@@ -110,7 +119,7 @@ elif selected_chapter == "Chapter 4":
 
 elif selected_chapter == "Chapter 9":
     chapter9_options = ["Erosion","Dilation","Boundary","Contour","ConnectedComponent", "CountRice"]
-    chapter9_selected = st.sidebar.selectbox("Select Operation", chapter9_options)
+    chapter9_selected = st.sidebar.selectbox("Chọn Thao Tác", chapter9_options)
     
     # Load example image if chapter or option changed
     if (st.session_state.last_selected_chapter != selected_chapter or 
@@ -122,7 +131,7 @@ elif selected_chapter == "Chapter 9":
         st.session_state.last_selected_option = chapter9_selected
 
 # File uploader
-image_file = st.file_uploader("Upload Your Image (Optional)", type=['jpg', 'jpeg', 'png', 'bmp', 'tif', 'tiff'])
+image_file = st.file_uploader("Tải ảnh lên (Tùy chọn)", type=['jpg', 'jpeg', 'png', 'bmp', 'tif', 'tiff'])
 
 # Process image if available (either from example or upload)
 if image_file is not None:
@@ -147,8 +156,11 @@ if st.session_state.imgin is not None:
         elif chapter3_selected == "HistEqual":
             processed_image = c3.HistEqual(imgin)
         elif chapter3_selected == "HistEqualColor":
-            imgin = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR) 
-            processed_image = c3.HistEqualColor(imgin)
+            image_path = find_image_file(os.path.join(parent_dir, "ThucHanhXuLyAnh/DIP3E_CH03_Original_Images"), "HistEqualColor")
+            img_bgr = cv2.imread(image_path, cv2.IMREAD_COLOR)
+            imgin = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+
+            processed_image = c3.HistEqualColor(img_bgr)
         elif chapter3_selected == "LocalHist":
             processed_image = c3.LocalHist(imgin)
         elif chapter3_selected == "HistStat":
@@ -169,6 +181,9 @@ if st.session_state.imgin is not None:
     elif selected_chapter == "Chapter 4":
         if chapter4_selected == "Spectrum":
             processed_image = c4.Spectrum(imgin)
+        elif chapter4_selected == "DrawInferenceFilter": # Vẽ bộ lọc giao thoa 
+            imgin = Image.new('RGB', (5, 5),  st.get_option("theme.backgroundColor"))
+            processed_image = c4.DrawInferenceFilter(imgin)# Xe
         elif chapter4_selected == "RemoveMoire": 
             processed_image = c4.RemoveMoire(imgin)
         elif chapter4_selected == "RemoveInterference":
@@ -197,7 +212,7 @@ if st.session_state.imgin is not None:
             processed_image = c9.CountRice(imgin)
             
     # Display images
-    st.subheader("Original Image and Processed Image")
+    st.subheader("Ảnh Gốc và Ảnh Đã Xử Lý")
     if image_file is not None:
         # If image was uploaded, convert to RGB for display
         image_bgr = cv2.imdecode(file_bytes, cv2.IMREAD_UNCHANGED)
@@ -207,4 +222,4 @@ if st.session_state.imgin is not None:
         # If using example image, display directly
         st.image([imgin, processed_image], width=350)
 
-st.button("Re-run")
+st.button("Chạy Lại")

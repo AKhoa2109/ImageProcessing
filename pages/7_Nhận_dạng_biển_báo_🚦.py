@@ -67,31 +67,54 @@ scale = 0.00392
 mean = [0, 0, 0]
 
 def postprocess(frame, outs):
+    """
+    Xử lý kết quả từ model và vẽ bounding box
+    
+    Args:
+        frame: Ảnh gốc
+        outs: Output từ model
+    """
     frameHeight = frame.shape[0]
     frameWidth = frame.shape[1]
 
     def drawPred(classId, conf, left, top, right, bottom):
+        """
+        Vẽ bounding box và label cho đối tượng được phát hiện
+        
+        Args:
+            classId: ID của lớp
+            conf: Độ tin cậy
+            left, top, right, bottom: Tọa độ bounding box
+        """
+        # Vẽ rectangle xanh lá
         cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0))
 
+        # Tạo label với tên lớp và độ tin cậy
         label = '%.2f' % conf
-
         if classes:
             assert(classId < len(classes))
             label = '%s: %s' % (classes[classId], label)
 
+        # Vẽ background cho text
         labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
         top = max(top, labelSize[1])
         cv2.rectangle(frame, (left, top - labelSize[1]), (left + labelSize[0], top + baseLine), (255, 255, 255), cv2.FILLED)
+        # Vẽ text
         cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
+    # Lấy thông tin về layer cuối cùng
     layerNames = st.session_state["NetBB"].getLayerNames()
     lastLayerId = st.session_state["NetBB"].getLayerId(layerNames[-1])
     lastLayer = st.session_state["NetBB"].getLayer(lastLayerId)
 
+    # Khởi tạo các list để lưu kết quả
     classIds = []
     confidences = []
     boxes = []
+
+    # Xử lý output từ model
     if lastLayer.type == 'Region' or postprocessing == 'yolov8':
+        # Tính scale cho bounding box
         if postprocessing == 'yolov8':
             box_scale_w = frameWidth / mywidth
             box_scale_h = frameHeight / myheight
@@ -99,6 +122,7 @@ def postprocess(frame, outs):
             box_scale_w = frameWidth
             box_scale_h = frameHeight
 
+        # Xử lý từng detection
         for out in outs:
             if postprocessing == 'yolov8':
                 out = out[0].transpose(1, 0)
@@ -109,13 +133,18 @@ def postprocess(frame, outs):
                     scores = np.delete(scores, background_label_id)
                 classId = np.argmax(scores)
                 confidence = scores[classId]
+                
+                # Lọc theo ngưỡng tin cậy
                 if confidence > confThreshold:
+                    # Tính toán tọa độ bounding box
                     center_x = int(detection[0] * box_scale_w)
                     center_y = int(detection[1] * box_scale_h)
                     width = int(detection[2] * box_scale_w)
                     height = int(detection[3] * box_scale_h)
                     left = int(center_x - width / 2)
                     top = int(center_y - height / 2)
+                    
+                    # Lưu kết quả
                     classIds.append(classId)
                     confidences.append(float(confidence))
                     boxes.append([left, top, width, height])
@@ -123,12 +152,15 @@ def postprocess(frame, outs):
         print('Unknown output layer type: ' + lastLayer.type)
         exit()
 
+    # Áp dụng Non-Maximum Suppression
     if len(outNames) > 1 or (lastLayer.type == 'Region' or postprocessing == 'yolov8') and 0 != cv2.dnn.DNN_BACKEND_OPENCV:
         indices = []
         classIds = np.array(classIds)
         boxes = np.array(boxes)
         confidences = np.array(confidences)
         unique_classes = set(classIds)
+        
+        # Áp dụng NMS cho từng lớp
         for cl in unique_classes:
             class_indices = np.where(classIds == cl)[0]
             conf = confidences[class_indices]
@@ -138,6 +170,7 @@ def postprocess(frame, outs):
     else:
         indices = np.arange(0, len(classIds))
 
+    # Vẽ kết quả cuối cùng
     for i in indices:
         box = boxes[i]
         left = box[0]

@@ -49,31 +49,71 @@ RIGHT_EYE_LANDMARKS = [362, 385, 387, 263, 373, 380]
 EAR_THRESHOLD = 0.21  # Ngưỡng tỷ lệ mắt
 
 def calculate_ear(eye_idxs: List[int], landmarks: List[Tuple[float, float]]) -> float:
-    """Tính toán tỷ lệ khung mắt (Eye Aspect Ratio)"""
+    """
+    Tính toán tỷ lệ khung mắt (Eye Aspect Ratio - EAR)
+    
+    Args:
+        eye_idxs: Danh sách chỉ số của các điểm landmark mắt
+        landmarks: Danh sách tọa độ các điểm landmark
+        
+    Returns:
+        float: Giá trị EAR
+    """
+    # Chuyển đổi các điểm landmark thành mảng numpy
     p0, p1, p2, p3, p4, p5 = [np.array(landmarks[i]) for i in eye_idxs]
+    
+    # Tính khoảng cách dọc 1 (từ p1 đến p5)
     vertical1 = np.linalg.norm(p1 - p5)
+    
+    # Tính khoảng cách dọc 2 (từ p2 đến p4)
     vertical2 = np.linalg.norm(p2 - p4)
+    
+    # Tính khoảng cách ngang (từ p0 đến p3)
     horizontal = np.linalg.norm(p0 - p3)
+    
+    # Tính EAR: (tổng khoảng cách dọc) / (2 * khoảng cách ngang)
     return (vertical1 + vertical2) / (2.0 * horizontal)
 
 def process_frame(image):
-    """Xử lý frame ảnh để phát hiện chớp mắt và vẽ landmarks"""
-    h, w = image.shape[:2]
+    """
+    Xử lý frame ảnh để phát hiện chớp mắt và vẽ landmarks
+    
+    Args:
+        image: Frame ảnh đầu vào
+        
+    Returns:
+        image: Frame ảnh đã được xử lý và vẽ landmarks
+    """
+    h, w = image.shape[:2]  # Lấy kích thước ảnh
+    
+    # Khởi tạo FaceMesh với các tham số
     with mp_face_mesh.FaceMesh(
-        max_num_faces=1,
-        refine_landmarks=True,
-        min_detection_confidence=0.5,
-        min_tracking_confidence=0.5
+        max_num_faces=1,  # Chỉ phát hiện 1 khuôn mặt
+        refine_landmarks=True,  # Làm mịn landmarks
+        min_detection_confidence=0.5,  # Độ tin cậy tối thiểu cho phát hiện
+        min_tracking_confidence=0.5  # Độ tin cậy tối thiểu cho tracking
     ) as face_mesh:
+        # Chuyển đổi ảnh từ BGR sang RGB
         rgb_frame = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        
+        # Xử lý frame với FaceMesh
         results = face_mesh.process(rgb_frame)
+        
         if results.multi_face_landmarks:
+            # Lấy landmarks của khuôn mặt đầu tiên
             lm = results.multi_face_landmarks[0]
+            
+            # Chuyển đổi landmarks thành tọa độ
             landmarks = [(p.x, p.y) for p in lm.landmark]
+            
+            # Tính EAR cho mắt trái và phải
             left_ear = calculate_ear(LEFT_EYE_LANDMARKS, landmarks)
             right_ear = calculate_ear(RIGHT_EYE_LANDMARKS, landmarks)
+            
+            # Tính EAR trung bình
             avg_ear = (left_ear + right_ear) / 2.0
 
+            # Xác định trạng thái mắt
             eye_closed = avg_ear < EAR_THRESHOLD
 
             # Phát hiện chuyển đổi trạng thái mắt
@@ -83,53 +123,72 @@ def process_frame(image):
                 st.session_state.blink_counter += 1
                 st.session_state.eye_closed = False
 
+            # Cập nhật trạng thái trước đó
             st.session_state.previous_closed = eye_closed
 
-            # Vẽ kết nối mắt
+            # Vẽ các kết nối mắt
             for connection in [LEFT_EYE_CONNECTIONS, RIGHT_EYE_CONNECTIONS]:
                 for start, end in connection:
+                    # Chuyển đổi tọa độ tương đối thành tọa độ pixel
                     x1 = int(lm.landmark[start].x * w)
                     y1 = int(lm.landmark[start].y * h)
                     x2 = int(lm.landmark[end].x * w)
                     y2 = int(lm.landmark[end].y * h)
+                    # Vẽ đường kết nối
                     cv2.line(image, (x1, y1), (x2, y2), (0, 255, 0), 1)
+                    
         return image
 
 def main():
+    """
+    Hàm chính của ứng dụng
+    """
     st.title("Phát hiện chớp mắt thời gian thực 👁️")
 
-    # Khởi tạo session state
+    # Khởi tạo các biến session state
     if 'blink_counter' not in st.session_state:
-        st.session_state.blink_counter = 0
+        st.session_state.blink_counter = 0  # Đếm số lần chớp mắt
     if 'previous_closed' not in st.session_state:
-        st.session_state.previous_closed = False
+        st.session_state.previous_closed = False  # Trạng thái mắt trước đó
     if 'eye_closed' not in st.session_state:
-        st.session_state.eye_closed = False
+        st.session_state.eye_closed = False  # Trạng thái mắt hiện tại
 
+    # Tạo các nút điều khiển
     start = st.button("Bắt đầu phát hiện")
     stop = st.button("Dừng")
 
     if start:
+        # Mở camera
         cap = cv2.VideoCapture(0)
-        img_placeholder = st.empty()
-        count_placeholder = st.empty()
-        status_placeholder = st.empty()
+        
+        # Tạo các placeholder để hiển thị
+        img_placeholder = st.empty()  # Hiển thị ảnh
+        count_placeholder = st.empty()  # Hiển thị số lần chớp mắt
+        status_placeholder = st.empty()  # Hiển thị trạng thái mắt
 
+        # Xử lý từng frame
         while cap.isOpened():
             if stop:
                 break
+                
+            # Đọc frame từ camera
             ret, frame = cap.read()
             if not ret:
                 break
+                
+            # Lật ảnh để hiển thị như gương
             frame = cv2.flip(frame, 1)
+            
+            # Xử lý frame
             processed = process_frame(frame)
 
-            # Hiển thị hình ảnh và thông tin
+            # Hiển thị kết quả
             img_placeholder.image(processed, channels="BGR", use_container_width=True)
             count_placeholder.markdown(f"**Số lần chớp mắt:** {st.session_state.blink_counter}")
             status = "Đóng mắt" if st.session_state.eye_closed else "Mở mắt"
             status_placeholder.markdown(f"**Trạng thái:** {status}")
 
+        # Giải phóng camera
         cap.release()
 
 if __name__ == "__main__":
