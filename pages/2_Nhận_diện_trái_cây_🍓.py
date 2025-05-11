@@ -37,12 +37,12 @@ st.markdown("""
 
 
 try:
-    if st.session_state["LoadModel"] == True:
+    if st.session_state["LoadModelTraiCay"] == True:
         print('Model đã sẵn sàng')
 except:
-    st.session_state["LoadModel"] = True
-    st.session_state["Net"] = cv2.dnn.readNet("NhanDangTraiCay/Yolov8n/yolov8n_traicay.onnx")
-    print(st.session_state["LoadModel"])
+    st.session_state["LoadModelTraiCay"] = True
+    st.session_state["NetTraiCay"] = cv2.dnn.readNet("NhanDangTraiCay/Yolov8n/yolov8n_traicay.onnx")
+    print(st.session_state["LoadModelTraiCay"])
     print('Load model lần đầu')
      
 filename_classes = 'NhanDangTraiCay/Yolov8n/fruit_detection_classes_yolo.txt'
@@ -59,9 +59,9 @@ if filename_classes:
     with open(filename_classes, 'rt') as f:
         classes = f.read().rstrip('\n').split('\n')
 
-st.session_state["Net"].setPreferableBackend(0)
-st.session_state["Net"].setPreferableTarget(0)
-outNames = st.session_state["Net"].getUnconnectedOutLayersNames()
+st.session_state["NetTraiCay"].setPreferableBackend(0)
+st.session_state["NetTraiCay"].setPreferableTarget(0)
+outNames = st.session_state["NetTraiCay"].getUnconnectedOutLayersNames()
 
 confThreshold = 0.5
 nmsThreshold = 0.4
@@ -88,15 +88,15 @@ def postprocess(frame, outs):
         cv2.rectangle(frame, (left, top - labelSize[1]), (left + labelSize[0], top + baseLine), (255, 255, 255), cv2.FILLED)
         cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
-    layerNames = st.session_state["Net"].getLayerNames()
-    lastLayerId = st.session_state["Net"].getLayerId(layerNames[-1])
-    lastLayer = st.session_state["Net"].getLayer(lastLayerId)
+    layerNames = st.session_state["NetTraiCay"].getLayerNames()
+    lastLayerId = st.session_state["NetTraiCay"].getLayerId(layerNames[-1])
+    lastLayer = st.session_state["NetTraiCay"].getLayer(lastLayerId)
 
     classIds = []
     confidences = []
     boxes = []
     if lastLayer.type == 'Region' or postprocessing == 'yolov8':
-        # Network produces output blob with a shape NxC where N is a number of
+        # NetTraiCaywork produces output blob with a shape NxC where N is a number of
         # detected objects and C is a number of classes + 4 where the first 4
         # numbers are [center_x, center_y, width, height]
         if postprocessing == 'yolov8':
@@ -176,12 +176,12 @@ if img_file_buffer is not None:
             blob = cv2.dnn.blobFromImage(frame, size=(inpWidth, inpHeight), swapRB=True, ddepth=cv2.CV_8U)
 
             # Run a model
-            st.session_state["Net"].setInput(blob, scalefactor=scale, mean=mean)
-            if st.session_state["Net"].getLayer(0).outputNameToIndex('im_info') != -1:  # Faster-RCNN or R-FCN
+            st.session_state["NetTraiCay"].setInput(blob, scalefactor=scale, mean=mean)
+            if st.session_state["NetTraiCay"].getLayer(0).outputNameToIndex('im_info') != -1:  # Faster-RCNN or R-FCN
                 frame = cv2.resize(frame, (inpWidth, inpHeight))
-                st.session_state["Net"].setInput(np.array([[inpHeight, inpWidth, 1.6]], dtype=np.float32), 'im_info')
+                st.session_state["NetTraiCay"].setInput(np.array([[inpHeight, inpWidth, 1.6]], dtype=np.float32), 'im_info')
 
-            outs = st.session_state["Net"].forward(outNames)
+            outs = st.session_state["NetTraiCay"].forward(outNames)
             postprocess(frame, outs)
 
             color_coverted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) 

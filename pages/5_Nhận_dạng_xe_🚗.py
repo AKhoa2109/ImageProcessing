@@ -189,30 +189,6 @@ def postprocess(frame, outs, tracker):
     frameWidth = frame.shape[1]
     detections = []
 
-    def drawPred(classId, conf, left, top, right, bottom, is_newly_counted=False):
-        """
-        Hàm vẽ bounding box và nhãn cho đối tượng được nhận dạng
-        Args:
-            is_newly_counted: True nếu là xe vừa được đếm
-        """
-        # Vẽ hình chữ nhật bao quanh đối tượng với màu khác nhau
-        color = (0, 0, 255) if is_newly_counted else (0, 255, 0)  # Đỏ cho xe mới, xanh cho xe cũ
-        cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
-
-        # Tạo nhãn với độ tin cậy
-        label = '%.2f' % conf
-
-        # Thêm tên lớp vào nhãn
-        if classes:
-            assert(classId < len(classes))
-            label = '%s: %s' % (classes[classId], label)
-
-        # Vẽ nền cho text
-        labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-        top = max(top, labelSize[1])
-        cv2.rectangle(frame, (left, top - labelSize[1]), (left + labelSize[0], top + baseLine), (255, 255, 255), cv2.FILLED)
-        cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
-
     # Lấy thông tin về layer cuối cùng
     layerNames = st.session_state["Net"].getLayerNames()
     lastLayerId = st.session_state["Net"].getLayerId(layerNames[-1])
