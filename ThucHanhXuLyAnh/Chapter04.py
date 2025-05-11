@@ -316,21 +316,22 @@ def CreateMotionFilter(M,N):
     return H
 
 def CreateDemotionFilter(M,N):
-    H = np.zeros((M,N), np.complex64)
-    T = 1.0
+    H = np.zeros((M,N),complex)
     a = 0.1
     b = 0.1
-    phi_prev = 0.0
-    for u in range(0,M):
-        for v in range (0,N):
-            phi = np.pi*((u-M//2)*a) + ((v-N//2)*b)
-            mau_so = np.sin(phi)
-
-            if abs(mau_so) < 1.0e-6:
-                phi = phi_prev
-
-            RE = phi/(T*np.sin(phi)*np.cos(phi))
-            IM = phi/T
+    T = 1
+    phi_prev = 0
+    for u in range(0, M):
+        for v in range(0, N):
+            phi = np.pi*((u-M//2)*a + (v-N//2)*b)
+            if np.abs(phi) < 1.0e-6:
+                RE = np.cos(phi)/T
+                IM = np.sin(phi)/T
+            else:
+                if np.abs(np.sin(phi)) < 1.0e-6:
+                    phi = phi_prev
+                RE = phi/(T*np.sin(phi))*np.cos(phi)
+                IM = phi/(T*np.sin(phi))*np.sin(phi)
             H.real[u,v] = RE
             H.imag[u,v] = IM
             phi_prev = phi
