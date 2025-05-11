@@ -91,7 +91,7 @@ mp_drawing = mp.solutions.drawing_utils
 if st.session_state.run:
     cap = cv2.VideoCapture(0)
     with mp_hands.Hands(
-        max_num_hands=1,
+        max_num_hands=2,
         min_detection_confidence=0.5,
         min_tracking_confidence=0.5
     ) as hands:
